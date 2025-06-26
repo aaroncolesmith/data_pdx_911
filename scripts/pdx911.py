@@ -68,7 +68,7 @@ import time
 
 
 ### 6/26 new version w/ retries
-
+d=pd.read_parquet('./data/portland_crime_data.parquet', engine='pyarrow')
 url = 'https://www.portlandonline.com/scripts/911incidents.cfm'
 max_retries = 3
 retry_delay_seconds = 5
