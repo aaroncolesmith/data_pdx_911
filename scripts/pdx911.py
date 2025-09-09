@@ -81,6 +81,8 @@ for attempt in range(max_retries):
         response.raise_for_status()
         dtmp = pd.read_xml(response.text)
         print("Data fetched successfully.")
+        new_data_size = dtmp.index.size
+        print(f"new data size {new_data_size}")
         break  # Exit the loop if successful
     except requests.exceptions.RequestException as e:
         print(f"Attempt {attempt + 1} failed: {e}")
@@ -99,6 +101,10 @@ if dtmp is not None:
     dtmp = dtmp.loc[(dtmp.id.notnull()) & (dtmp.title.notnull())].reset_index(drop=True)
     dtmp = dtmp[['summary', 'updated', 'point']]
     # ... and so on
+    print("Data updates successfully.")
+    new_data_size = dtmp.index.size
+    print(f"new data size {new_data_size}")
+
     
     # Then continue with the rest of your code
     d = pd.concat([d, dtmp])
