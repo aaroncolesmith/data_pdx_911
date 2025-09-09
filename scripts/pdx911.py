@@ -73,22 +73,22 @@ d=pd.read_parquet('./data/portland_crime_data.parquet', engine='pyarrow')
 
 bad_data = d.loc[d['TEXT'].isna()]
 print(f'bad data -- currently there is {bad_data.index.size} records of bad data')
-bad_data=bad_data[['summary', 'updated', 'point']]
-bad_data.columns=['TEXT','DATE','COORDS']
+# bad_data=bad_data[['summary', 'updated', 'point']]
+# bad_data.columns=['TEXT','DATE','COORDS']
 
-bad_data[['CRIME','ADDRESS']] = bad_data['TEXT'].str.split('at',n=1, expand=True)
-bad_data[['ADDRESS','CRIME_ID']]=bad_data['ADDRESS'].str.split(' \[',n=1,expand=True)
-bad_data['ADDRESS']=bad_data['ADDRESS'].str.replace(', PORT',', PORTLAND').str.replace(', GRSM',', GRESHAM')
+# bad_data[['CRIME','ADDRESS']] = bad_data['TEXT'].str.split('at',n=1, expand=True)
+# bad_data[['ADDRESS','CRIME_ID']]=bad_data['ADDRESS'].str.split(' \[',n=1,expand=True)
+# bad_data['ADDRESS']=bad_data['ADDRESS'].str.replace(', PORT',', PORTLAND').str.replace(', GRSM',', GRESHAM')
 
-bad_data['DATE'] = pd.to_datetime(bad_data['DATE'])
-bad_data['HOUR'] = bad_data['DATE'].dt.floor('h')
-bad_data['DAY'] = bad_data['DATE'].dt.floor('d')
-bad_data['DATE_CRIME'] = bad_data['DATE'].dt.strftime('%-m/%-d %-I:%M%p').astype('str') + ' - ' + bad_data['CRIME']
+# bad_data['DATE'] = pd.to_datetime(bad_data['DATE'])
+# bad_data['HOUR'] = bad_data['DATE'].dt.floor('h')
+# bad_data['DAY'] = bad_data['DATE'].dt.floor('d')
+# bad_data['DATE_CRIME'] = bad_data['DATE'].dt.strftime('%-m/%-d %-I:%M%p').astype('str') + ' - ' + bad_data['CRIME']
 
-bad_data[['LATITUDE','LONGITUDE']] = bad_data['COORDS'].str.split(' ',n=1, expand=True)
-d = pd.concat([d, bad_data])
-d=d.groupby(['DATE','TEXT','COORDS']).size().to_frame('cnt').reset_index().sort_values('DATE',ascending=True).reset_index(drop=True)
-del d['cnt']
+# bad_data[['LATITUDE','LONGITUDE']] = bad_data['COORDS'].str.split(' ',n=1, expand=True)
+# d = pd.concat([d, bad_data])
+# d=d.groupby(['DATE','TEXT','COORDS']).size().to_frame('cnt').reset_index().sort_values('DATE',ascending=True).reset_index(drop=True)
+# del d['cnt']
 
 
 
