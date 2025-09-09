@@ -100,7 +100,19 @@ if dtmp is not None:
     # Rest of your data processing code for dtmp
     dtmp = dtmp.loc[(dtmp.id.notnull()) & (dtmp.title.notnull())].reset_index(drop=True)
     dtmp = dtmp[['summary', 'updated', 'point']]
-    # ... and so on
+    dtmp.columns=['TEXT','DATE','COORDS']
+    
+    dtmp[['CRIME','ADDRESS']] = dtmp['TEXT'].str.split('at',n=1, expand=True)
+    dtmp[['ADDRESS','CRIME_ID']]=dtmp['ADDRESS'].str.split(' \[',n=1,expand=True)
+    dtmp['ADDRESS']=dtmp['ADDRESS'].str.replace(', PORT',', PORTLAND').str.replace(', GRSM',', GRESHAM')
+    
+    dtmp['DATE'] = pd.to_datetime(dtmp['DATE'])
+    dtmp['HOUR'] = dtmp['DATE'].dt.floor('h')
+    dtmp['DAY'] = dtmp['DATE'].dt.floor('d')
+    dtmp['DATE_CRIME'] = dtmp['DATE'].dt.strftime('%-m/%-d %-I:%M%p').astype('str') + ' - ' + dtmp['CRIME']
+    
+    dtmp[['LATITUDE','LONGITUDE']] = dtmp['COORDS'].str.split(' ',n=1, expand=True)
+    
     print("Data updates successfully.")
     new_data_size = dtmp.index.size
     print(f"new data size {new_data_size}")
@@ -108,7 +120,42 @@ if dtmp is not None:
     
     # Then continue with the rest of your code
     d = pd.concat([d, dtmp])
+    d=d.groupby(['DATE','TEXT','COORDS']).size().to_frame('cnt').reset_index().sort_values('DATE',ascending=True).reset_index(drop=True)
+    del d['cnt']
+    
+    d[['CRIME','ADDRESS']] = d['TEXT'].str.split('at',n=1, expand=True)
+    d[['ADDRESS','CRIME_ID']]=d['ADDRESS'].str.split(' \[',n=1,expand=True)
+    d['ADDRESS']=d['ADDRESS'].str.replace(', PORT',', PORTLAND').str.replace(', GRSM',', GRESHAM')
+    d['DATE']=d['DATE'].apply(lambda x: pd.to_datetime(x).tz_convert('US/Pacific'))
+    d['DATE_CRIME'] = pd.to_datetime(d['DATE'], utc=False).dt.strftime('%-m/%-d %-I:%M%p').astype('str') + ' - ' + d['CRIME']
+    d[['LATITUDE','LONGITUDE']] = d['COORDS'].str.split(' ',n=1, expand=True)
+    # d['DATE'] = pd.to_datetime(d['DATE'])
+    d['HOUR'] = d['DATE'].dt.floor('h',ambiguous=True)
+    d['DAY'] = d['DATE'].dt.floor('d')
+    d['DATE_CRIME'] = d['DATE'].dt.strftime('%-m/%-d %-I:%M%p').astype('str') + ' - ' + d['CRIME']
     # ... and so on
+
+
+    ## fixing some bad data
+    bad_data = d.loc[d['TEXT'].isna()]
+    print(f'bad data -- currently there is {bad_data.index.size} records of bad data')
+    bad_data=bad_data[['summary', 'updated', 'point']]
+    bad_data.columns=['TEXT','DATE','COORDS']
+    
+    bad_data[['CRIME','ADDRESS']] = bad_data['TEXT'].str.split('at',n=1, expand=True)
+    bad_data[['ADDRESS','CRIME_ID']]=bad_data['ADDRESS'].str.split(' \[',n=1,expand=True)
+    bad_data['ADDRESS']=bad_data['ADDRESS'].str.replace(', PORT',', PORTLAND').str.replace(', GRSM',', GRESHAM')
+    
+    bad_data['DATE'] = pd.to_datetime(bad_data['DATE'])
+    bad_data['HOUR'] = bad_data['DATE'].dt.floor('h')
+    bad_data['DAY'] = bad_data['DATE'].dt.floor('d')
+    bad_data['DATE_CRIME'] = bad_data['DATE'].dt.strftime('%-m/%-d %-I:%M%p').astype('str') + ' - ' + bad_data['CRIME']
+    
+    bad_data[['LATITUDE','LONGITUDE']] = bad_data['COORDS'].str.split(' ',n=1, expand=True)
+    d = pd.concat([d, bad_data])
+    d=d.groupby(['DATE','TEXT','COORDS']).size().to_frame('cnt').reset_index().sort_values('DATE',ascending=True).reset_index(drop=True)
+    del d['cnt']
+
     
     # Finally, write the file
     table = pa.Table.from_pandas(d)
